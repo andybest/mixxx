@@ -863,6 +863,29 @@ void setHotCue(TrackPointer track,
     }
 }
 
+void setMemoryCue(TrackPointer track,
+        mixxx::audio::FramePos startPosition,
+        mixxx::audio::FramePos endPosition,
+        const QString& label,
+        mixxx::RgbColor::optional_t color) {
+    // TODO: abest- make sure this works
+
+    mixxx::CueType type = mixxx::CueType::MemoryCue;
+    if (endPosition.isValid()) {
+        type = mixxx::CueType::Loop;
+    }
+
+    auto pCue = track->createAndAddCue(
+            type,
+            Cue::kNoHotCue,
+            startPosition,
+            endPosition);
+    pCue->setLabel(label);
+    if (color) {
+        pCue->setColor(*color);
+    }
+}
+
 void readAnalyze(TrackPointer track,
         mixxx::audio::SampleRate sampleRate,
         int timingOffset,
@@ -1069,15 +1092,22 @@ void readAnalyze(TrackPointer track,
                 pMainCue->setLabel(memoryCueOrLoop.comment);
                 pMainCue->setColor(*memoryCueOrLoop.color);
                 mainCueFound = true;
+
+                // Also add a memory cue at the same position
+                setMemoryCue(
+                    track,
+                    memoryCueOrLoop.startPosition,
+                    memoryCueOrLoop.endPosition,
+                    memoryCueOrLoop.comment,
+                    memoryCueOrLoop.color);
             } else {
                 // Mixxx v2.4 will feature multiple loops, so these saved here will be usable
                 // For 2.3, Mixxx treats them as hotcues and the first one will be loaded as the single loop Mixxx supports
-                lastHotCueIndex++;
-                setHotCue(
+                // lastHotCueIndex++;
+                setMemoryCue(
                         track,
                         memoryCueOrLoop.startPosition,
                         memoryCueOrLoop.endPosition,
-                        lastHotCueIndex,
                         memoryCueOrLoop.comment,
                         memoryCueOrLoop.color);
             }

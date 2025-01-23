@@ -440,6 +440,9 @@ void WTrackMenu::createActions() {
         m_pClearHotCuesAction = new QAction(tr("Hotcues"), m_pClearMetadataMenu);
         connect(m_pClearHotCuesAction, &QAction::triggered, this, &WTrackMenu::slotClearHotCues);
 
+        m_pClearMemoryCuesAction = new QAction(tr("Memory Cues"), m_pClearMetadataMenu);
+        connect(m_pClearMemoryCuesAction, &QAction::triggered, this, &WTrackMenu::slotClearMemoryCues);
+
         m_pClearIntroCueAction = new QAction(tr("Intro"), m_pClearMetadataMenu);
         connect(m_pClearIntroCueAction, &QAction::triggered, this, &WTrackMenu::slotResetIntroCue);
 
@@ -2163,6 +2166,17 @@ void WTrackMenu::slotClearHotCues() {
             &trackOperator);
 }
 
+// TODO: abest- clear memory cues
+void WTrackMenu::slotClearMemoryCues() {
+    const auto progressLabelText =
+            tr("Removing memory cues from %n track(s)", "", getTrackCount());
+    const auto trackOperator =
+            RemoveCuesOfTypeTrackPointerOperation(mixxx::CueType::MemoryCue);
+    applyTrackPointerOperation(
+            progressLabelText,
+            &trackOperator);
+}
+
 namespace {
 
 class ResetKeysTrackPointerOperation : public mixxx::TrackPointerOperation {
@@ -2254,6 +2268,7 @@ class ClearAllPerformanceMetadataTrackPointerOperation : public mixxx::TrackPoin
               m_removeOutroCue(mixxx::CueType::Outro),
               m_removeHotCues(mixxx::CueType::HotCue),
               m_removeLoopCues(mixxx::CueType::Loop),
+              m_removeMemoryCues(mixxx::CueType::MemoryCue),
               m_resetWaveform(analysisDao) {
     }
 
@@ -2265,6 +2280,7 @@ class ClearAllPerformanceMetadataTrackPointerOperation : public mixxx::TrackPoin
         m_removeMainCue.apply(pTrack);
         m_removeHotCues.apply(pTrack);
         m_removeLoopCues.apply(pTrack);
+        m_removeMemoryCues.apply(pTrack);
         m_resetKeys.apply(pTrack);
         m_resetReplayGain.apply(pTrack);
         m_resetWaveform.apply(pTrack);
@@ -2280,6 +2296,7 @@ class ClearAllPerformanceMetadataTrackPointerOperation : public mixxx::TrackPoin
     const RemoveCuesOfTypeTrackPointerOperation m_removeOutroCue;
     const RemoveCuesOfTypeTrackPointerOperation m_removeHotCues;
     const RemoveCuesOfTypeTrackPointerOperation m_removeLoopCues;
+    const RemoveCuesOfTypeTrackPointerOperation m_removeMemoryCues;
     const ResetKeysTrackPointerOperation m_resetKeys;
     const ResetReplayGainTrackPointerOperation m_resetReplayGain;
     const ResetWaveformTrackPointerOperation m_resetWaveform;

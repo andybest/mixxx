@@ -627,6 +627,7 @@ void CueControl::loadCuesFromTrack() {
     CuePointer pIntroCue;
     CuePointer pOutroCue;
 
+    // TODO: abest- implement Memory cues
     const QList<CuePointer> cues = m_pLoadedTrack->getCuePoints();
     for (const auto& pCue : cues) {
         switch (pCue->getType()) {
