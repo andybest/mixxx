@@ -61,7 +61,15 @@ void WaveformMarkSet::setup(const QString& group, const QDomNode& node,
                 m_hotCueMarks.insert(pMark->getHotCue(), pMark);
             }
         }
+
+        for (int i = 0; i < NUM_MEMORY_CUES; ++i) {
+            WaveformMarkPointer pMark(new WaveformMark(
+                    group, defaultChild, context, i, signalColors, Cue::kNoHotCue, i));
+            m_marks.push_front(pMark);
+        }
     }
+
+    // TODO: abest- Memory Cues
 }
 
 WaveformMarkPointer WaveformMarkSet::getHotCueMark(int hotCue) const {

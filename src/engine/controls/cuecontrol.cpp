@@ -97,6 +97,7 @@ CueControl::CueControl(const QString& group,
           m_pStopButton(ControlObject::getControl(ConfigKey(group, "stop"))),
           m_bypassCueSetByPlay(false),
           m_iNumHotCues(NUM_HOT_CUES),
+          m_iNumMemoryCues(NUM_MEMORY_CUES),
           m_pCurrentSavedLoopControl(nullptr),
           m_trackMutex(QT_RECURSIVE_MUTEX_INIT) {
     // To silence a compiler warning about CUE_MODE_PIONEER.
@@ -134,6 +135,7 @@ CueControl::~CueControl() {
     delete m_pCuePoint;
     delete m_pCueMode;
     qDeleteAll(m_hotcueControls);
+    qDeleteAll(m_memoryCueStartPositions);
 }
 
 void CueControl::createControls() {
@@ -210,6 +212,18 @@ void CueControl::createControls() {
     for (int i = 0; i < m_iNumHotCues; ++i) {
         HotcueControl* pControl = new HotcueControl(m_group, i);
         m_hotcueControls.append(pControl);
+    }
+
+    for (int i=0; i < m_iNumMemoryCues; ++i) {
+        ConfigKey key;
+        key.group = m_group;
+        key.item = QStringLiteral("memorycue_") +
+                QString::number(i + 1) +
+                QStringLiteral("_startPosition");
+
+        ControlObject* pControl = new ControlObject(key);
+        pControl->set(Cue::kNoPosition);
+        m_memoryCueStartPositions.append(pControl);
     }
 }
 
@@ -505,6 +519,10 @@ void CueControl::trackLoaded(TrackPointer pNewTrack) {
         setHotcueFocusIndex(Cue::kNoHotCue);
         m_pLoadedTrack.reset();
         m_usedSeekOnLoadPosition.setValue(mixxx::audio::kStartFramePos);
+
+        for (const auto& pControl : std::as_const(m_memoryCueStartPositions)) {
+            pControl->set(Cue::kNoPosition);
+        }
     }
 
     if (!pNewTrack) {
@@ -626,6 +644,7 @@ void CueControl::loadCuesFromTrack() {
     CuePointer pMainCue;
     CuePointer pIntroCue;
     CuePointer pOutroCue;
+    std::vector<double> memory_cue_start_positions;
 
     // TODO: abest- implement Memory cues
     const QList<CuePointer> cues = m_pLoadedTrack->getCuePoints();
@@ -680,11 +699,27 @@ void CueControl::loadCuesFromTrack() {
             m_n60dBSoundStartPosition.setValue(pos.startPosition.toEngineSamplePos());
             break;
         }
+        case mixxx::CueType::MemoryCue: {
+            Cue::StartAndEndPositions pos = pCue->getStartAndEndPosition();
+            memory_cue_start_positions.push_back(pos.startPosition.toEngineSamplePosMaybeInvalid());
+            break;
+        }
         case mixxx::CueType::Beat:
         case mixxx::CueType::Jump:
         case mixxx::CueType::Invalid:
         default:
             break;
+        }
+    }
+
+    // Update memory cue start positions
+    std::sort(memory_cue_start_positions.begin(), memory_cue_start_positions.end());
+
+    for(size_t i = 0; i < NUM_MEMORY_CUES; ++i) {
+        if(i < memory_cue_start_positions.size()) {
+            m_memoryCueStartPositions[i]->set(memory_cue_start_positions[i]);
+        } else {
+            m_memoryCueStartPositions[i]->set(Cue::kNoPosition);
         }
     }
 

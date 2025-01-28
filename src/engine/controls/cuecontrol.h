@@ -15,6 +15,7 @@
 #include "util/parented_ptr.h"
 
 #define NUM_HOT_CUES 37
+#define NUM_MEMORY_CUES 10
 
 class ControlObject;
 class ControlPushButton;
@@ -309,6 +310,9 @@ class CueControl : public EngineControl {
 
     const int m_iNumHotCues;
     QList<HotcueControl*> m_hotcueControls;
+
+    const int m_iNumMemoryCues;
+    QList<ControlObject*> m_memoryCueStartPositions;
 
     ControlObject* m_pTrackSamples;
     ControlObject* m_pCuePoint;

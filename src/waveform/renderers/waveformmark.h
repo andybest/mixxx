@@ -30,7 +30,8 @@ class WaveformMark {
             const SkinContext& context,
             int priority,
             const WaveformSignalColors& signalColors,
-            int hotCue = Cue::kNoHotCue);
+            int hotCue = Cue::kNoHotCue,
+            int memoryCue = Cue::kNoMemoryCue);
     ~WaveformMark();
 
     // Disable copying
@@ -182,6 +183,7 @@ class WaveformMark {
 
     int m_iPriority;
     int m_iHotCue;
+    int m_iMemoryCue;
 
     // Whether this marker is used in the show beats/time until next marker display.
     bool m_showUntilNext;

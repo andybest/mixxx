@@ -870,6 +870,14 @@ void setMemoryCue(TrackPointer track,
         mixxx::RgbColor::optional_t color) {
     // TODO: abest- make sure this works
 
+    // Make sure the track doesn't already have a memory cue at this location
+    const QList<CuePointer> cuePoints = track->getCuePoints();
+    for (const CuePointer& trackCue : cuePoints) {
+        if (trackCue->getType() == mixxx::CueType::MemoryCue && trackCue->getStartAndEndPosition().startPosition == startPosition) {
+            return;
+        }
+    }
+
     mixxx::CueType type = mixxx::CueType::MemoryCue;
     if (endPosition.isValid()) {
         type = mixxx::CueType::Loop;

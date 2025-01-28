@@ -98,13 +98,15 @@ WaveformMark::WaveformMark(const QString& group,
         const SkinContext& context,
         int priority,
         const WaveformSignalColors& signalColors,
-        int hotCue)
+        int hotCue,
+        int memoryCue)
         : m_linePosition{},
           m_offset{},
           m_breadth{},
           m_level{},
           m_iPriority(priority),
           m_iHotCue(hotCue),
+          m_iMemoryCue(memoryCue),
           m_showUntilNext{} {
     QString positionControl;
     QString endPositionControl;
@@ -114,6 +116,8 @@ WaveformMark::WaveformMark(const QString& group,
         endPositionControl = "hotcue_" + QString::number(hotCue + 1) + "_endposition";
         typeControl = "hotcue_" + QString::number(hotCue + 1) + "_type";
         m_showUntilNext = true;
+    } else if (memoryCue != Cue::kNoMemoryCue) {
+        positionControl = "memorycue_" + QString::number(memoryCue + 1) + "_startPosition";
     } else {
         positionControl = context.selectString(node, "Control");
         m_showUntilNext = isShowUntilNextPositionControl(positionControl);
